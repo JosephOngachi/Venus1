@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credentials Form</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .form-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333333;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="checkbox"] {
+            width: auto;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .credentials-fields {
+            display: none;
+        }
+
+        .show {
+            display: block;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #666666;
+            margin-top: 5px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Change Credentials</h2>
+    <form id="credentialsForm" action="/update_credentials" method="POST">
+        <div class="form-group">
+            <label>Select what you want to change:</label>
+            <div class="checkbox-label">
+                <input type="checkbox" id="passwordCheckbox" name="passwordCheckbox" onchange="toggleFields()">
+                <label for="passwordCheckbox">Password</label>
+            </div>
+            <div class="checkbox-label">
+                <input type="checkbox" id="usernameCheckbox" name="usernameCheckbox" onchange="toggleFields()">
+                <label for="usernameCheckbox">Username</label>
+            </div>
+            <span class="help-text">Select one i.e. password or username</span>
+        </div>
+        <div class="form-group credentials-fields" id="passwordFields">
+            <label for="phoneNumber">Input phone number used for signup:</label>
+            <input type="text" id="phoneNumber" name="phoneNumber" placeholder="Phone number" required>
+            <label for="newPassword">Input new password:</label>
+            <input type="password" id="newPassword" name="newPassword" placeholder="New password" required>
+            <label for="confirmPassword">Confirm new password:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required>
+        </div>
+        <div class="form-group credentials-fields" id="usernameFields">
+            <label for="phoneNumberUsername">Input phone number used for signup:</label>
+            <input type="text" id="phoneNumberUsername" name="phoneNumberUsername" placeholder="Phone number">
+            <label for="newUsername">Input new username:</label>
+            <input type="text" id="newUsername" name="newUsername" placeholder="New username">
+            <label for="confirmUsername">Confirm new username:</label>
+            <input type="text" id="confirmUsername" name="confirmUsername" placeholder="Confirm username">
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+</div>
+
+<script>
+    function toggleFields() {
+        var passwordCheckbox = document.getElementById("passwordCheckbox");
+        var usernameCheckbox = document.getElementById("usernameCheckbox");
+        var passwordFields = document.getElementById("passwordFields");
+        var usernameFields = document.getElementById("usernameFields");
+
+        if (passwordCheckbox.checked) {
+            passwordFields.classList.add("show");
+            // Enable required attribute for password fields
+            document.getElementById("phoneNumber").setAttribute("required", true);
+            document.getElementById("newPassword").setAttribute("required", true);
+            document.getElementById("confirmPassword").setAttribute("required", true);
+            // Remove required attribute from username fields
+            document.getElementById("phoneNumberUsername").removeAttribute("required");
+            document.getElementById("newUsername").removeAttribute("required");
+            document.getElementById("confirmUsername").removeAttribute("required");
+        } else {
+            passwordFields.classList.remove("show");
+            // Disable required attribute for password fields
+            document.getElementById("phoneNumber").removeAttribute("required");
+            document.getElementById("newPassword").removeAttribute("required");
+            document.getElementById("confirmPassword").removeAttribute("required");
+        }
+
+        if (usernameCheckbox.checked) {
+            usernameFields.classList.add("show");
+            // Enable required attribute for username fields
+            document.getElementById("phoneNumberUsername").setAttribute("required", true);
+            document.getElementById("newUsername").setAttribute("required", true);
+            document.getElementById("confirmUsername").setAttribute("required", true);
+            // Remove required attribute from password fields
+            document.getElementById("phoneNumber").removeAttribute("required");
+            document.getElementById("newPassword").removeAttribute("required");
+            document.getElementById("confirmPassword").removeAttribute("required");
+        } else {
+            usernameFields.classList.remove("show");
+            // Disable required attribute for username fields
+            document.getElementById("phoneNumberUsername").removeAttribute("required");
+            document.getElementById("newUsername").removeAttribute("required");
+            document.getElementById("confirmUsername").removeAttribute("required");
+        }
+    }
+</script>
+
+</body>
+</html>

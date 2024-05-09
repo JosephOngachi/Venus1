@@ -1,0 +1,44 @@
+<style>
+  .blink-btn {
+    background-color: blue;
+    color: white;
+    border: none;
+    border-radius: 15px; /* Adjust border radius as needed */
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+  }
+
+  .blink-btn:hover {
+    background-color: darkblue;
+  }
+
+  @keyframes blink {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .blink-btn.blink-animation {
+    animation: blink 2s infinite;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Find the button element
+    var investNowBtn = document.getElementById('investNowBtn');
+
+    // Add click event listener to the button
+    investNowBtn.addEventListener('click', function() {
+      // Redirect to investments.ejs page
+      window.location.href = '/investments';
+    });
+  });
+</script>

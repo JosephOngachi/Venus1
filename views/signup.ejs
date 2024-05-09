@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" placeholder="Password" required>
+      </div>
+      <div class="form-group">
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="text" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required>
+      </div>
+      <div class="form-group">
+        <label for="referralCode">Referral Code (Optional):</label>
+        <input type="text" id="referralCode" name="referralCode" placeholder="Enter referral code if you have one" autocomplete="off">
+        <span class="optional-text">Optional</span>
+      </div>
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+</div>
+
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelector('#signupForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent the default form submission
+
+    // Set customer details from form inputs
+    const username = document.querySelector('#username').value; // Changed 'name' to 'username'
+    const email = document.querySelector('#email').value;
+    const phoneNumber = document.querySelector('#phoneNumber').value;
+
+    // Configure the payment
+    const paymentConfig = {
+      public_key: 'FLWPUBK_TEST-ee7f1ab17bf45bb537869e188e972663-X',
+      tx_ref: `MC-${Date.now()}`,
+      amount: 30,
+      currency: 'KES',
+      country: 'KE',
+      payment_options: 'card,mobilemoney,ussd',
+      customer: {
+        email: email,
+        phone_number: phoneNumber,
+        name: username,
+      },
+      callback: function (response) {
+        console.log('Payment success:', response);
+        // After successful payment, submit the form data to your server
+        const formData = {
+          username: username, // Changed 'name' to 'username'
+          email: email,
+          password: document.querySelector('#password').value,
+          phoneNumber: phoneNumber,
+          referralCode: document.querySelector('#referralCode').value,
+        };
+
+        fetch('/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+          // Redirect or inform the user of success, e.g.:
+          window.location.href = '/signup_success'; // Redirect to signup success page
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+      },
+      onclose: function () {
+        console.log('Payment cancelled');
+        // Optionally handle the cancellation
+      },
+    };
+
+    FlutterwaveCheckout(paymentConfig);
+  });
+});
+</script>
+</body>
+</html>
+
+

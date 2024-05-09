@@ -1,0 +1,135 @@
+const express = require("express");
+const session = require("express-session");
+const UserModel = require("./config");
+const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid');
+const http = require('http');
+const socketIo = require('socket.io');
+
+const app = express();
+const server = http.createServer(app); // Create an HTTP server instance
+const io = socketIo(server); // Initialize Socket.IO with the HTTP server
+
+app.use(express.json());
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: false }));
+app.set("view engine", "ejs");
+app.use(session({ secret: 'your_secret_here', resave: false, saveUninitialized: true }));
+
+// Socket.IO setup
+io.on('connection', (socket) => {
+  console.log('A user connected');
+  // Add Socket.IO event listeners or handlers here as needed
+});
+
+async function startCountdownTimer(req, phoneNumber) {
+  try {
+    const user = await UserModel.findOne({ phoneNumber: phoneNumber });
+    if (user && !user.countdownStartTime) {
+      user.countdownStartTime = new Date();
+      const totalDuration = (7 * 24 * 60 * 60 * 1000) - (2 * 60 * 1000);
+      user.remainingTime = totalDuration;
+      await user.save();
+      console.log(`Countdown timer started for user ${phoneNumber}`);
+      req.session.countdownStartTime = user.countdownStartTime;
+      req.session.remainingTime = user.remainingTime;
+    } else if (user && user.countdownStartTime && user.remainingTime > 0) {
+      const currentTime = new Date();
+      const elapsedTime = currentTime - user.countdownStartTime;
+      user.remainingTime -= elapsedTime;
+      user.countdownStartTime = currentTime;
+      await user.save();
+      console.log(`Countdown timer resumed for user ${phoneNumber}`);
+      req.session.countdownStartTime = currentTime;
+      req.session.remainingTime = user.remainingTime;
+    }
+  } catch (error) {
+    console.error(`Error starting/resuming countdown timer for user ${phoneNumber}:`, error);
+  }
+}
+
+async function handleTimerExpiration(phoneNumber, req) {
+  try {
+    const user = await UserModel.findOne({ phoneNumber: phoneNumber });
+    if (user && user.countdownStartTime && user.investmentAmount >= 10000) {
+      const currentTime = new Date();
+      const elapsedTime = currentTime - user.countdownStartTime;
+      if (elapsedTime >= user.remainingTime) {
+        user.investmentEarnings += 19.3;
+        user.countdownStartTime = currentTime;
+        user.remainingTime = (7 * 24 * 60 * 60 * 1000) - (2 * 60 * 1000);
+        await user.save();
+        console.log(`Timer expired for user ${phoneNumber}. Added 19.3 to investment earnings.`);
+        req.session.countdownStartTime = user.countdownStartTime;
+        req.session.remainingTime = user.remainingTime;
+      }
+    } else if (user && user.countdownStartTime && user.investmentAmount < 10000) {
+      // Pause the timer when the investment amount goes below 10000
+      user.countdownStartTime = null;
+      user.remainingTime = null;
+      await user.save();
+      console.log(`Timer paused for user ${phoneNumber}`);
+      req.session.countdownStartTime = null;
+      req.session.remainingTime = null;
+    }
+  } catch (error) {
+    console.error(`Error handling timer expiration for user ${phoneNumber}:`, error);
+  }
+}
+
+
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+app.get("/changes", (req, res) => {
+  res.render("changes");
+});
+app.post("/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      const user = await UserModel.findOne({ name: username });
+  
+      if (!user) {
+        return res.status(404).send("User not found <br> <a href='/signup'>Create account here!</a>");
+      }
+  
+      const isPasswordMatch = await bcrypt.compare(password, user.password);
+  
+      if (!isPasswordMatch) {
+        return res.status(401).send("Incorrect password <br> <a href='/login'>Retry with correct password</a> <br> <a href='/changes'>Forgot your password? Click here to reset it</a>");
+      }
+  
+      await startCountdownTimer(req, username);
+      await handleTimerExpiration(username, req);
+  
+      const currentTime = new Date();
+      const elapsedMilliseconds = currentTime - user.countdownStartTime;
+      const adjustedRemainingTime = Math.max(user.remainingTime - elapsedMilliseconds, 0);
+  
+      return res.render("home", {
+        username: user.name,
+        investmentAmount: user.investmentAmount,
+        investmentEarnings: user.investmentEarnings,
+        referralEarnings: user.referralEarnings,
+        referralCredits: user.referralCredits,
+        referralCode: user.referralCode,
+        remainingTime: adjustedRemainingTime
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("Internal Server Error");
+    }
+  });
+  
+  app.get("/", (req, res) => {
+    res.render("login");
+  });
+  
+  app.get("/signup", (req, res) => {
+    res.render("signup");
+  });
+
+
+
+  loansapply

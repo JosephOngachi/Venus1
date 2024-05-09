@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impute Your details to Invest!</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="form-container">
+  <h2 style="background-color: blue; color: white; font-weight: bold;">Impute your email and phone to invest</h2>
+
+    <form id="signupForm">
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+      </div>
+      <div class="form-group">
+        <label for="phoneNumber">Phone Number:</label>
+        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required>
+      </div>        
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+</div>
+
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelector('#signupForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent the default form submission
+
+    // Set customer details from form inputs
+    const email = document.querySelector('#email').value;
+    const phoneNumber = document.querySelector('#phoneNumber').value;
+
+    // Ensure phoneNumber is correctly populated
+    console.log('Phone Number:', phoneNumber);
+
+    // Configure the payment
+    const paymentConfig = {
+      public_key: 'FLWPUBK_TEST-ee7f1ab17bf45bb537869e188e972663-X',
+      tx_ref: `MC-${Date.now()}`,
+      amount: 10000,
+      currency: 'KES',
+      country: 'KE',
+      payment_options: 'card,mobilemoney,ussd',
+      customer: {
+        email: email,
+        phone_number: phoneNumber,
+      },
+      callback: function (response) {
+        if (response && response.status === "successful") {
+          // Send JSON response to backend to update investment amount
+          updateInvestmentAmount(phoneNumber);
+        } else {
+          alert('Payment failed');
+        }
+      },
+      onclose: function () {
+        console.log('Payment cancelled');
+        // Optionally handle the cancellation
+      },
+    };
+
+    FlutterwaveCheckout(paymentConfig);
+  });
+});
+
+function updateInvestmentAmount(phoneNumber) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/update_investment_amount", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        console.log("Investment amount updated successfully.");
+        // Redirect to success page or display a success message
+        window.location.href = "/investment_success";
+      } else {
+        console.error("Error updating investment amount:", xhr.statusText);
+        // Redirect to error page or display an error message
+        window.location.href = "/error";
+      }
+    }
+  };
+  xhr.send(JSON.stringify({ phoneNumber: phoneNumber }));
+}
+</script>
+</body>
+</html>
