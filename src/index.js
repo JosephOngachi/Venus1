@@ -5,10 +5,11 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const http = require('http');
 const socketIo = require('socket.io');
+const cron = require('node-cron'); // Import node-cron
 
 const app = express();
-const server = http.createServer(app); // Create an HTTP server instance
-const io = socketIo(server); // Initialize Socket.IO with the HTTP server
+const server = http.createServer(app);
+const io = socketIo(server);
 
 app.use(express.json());
 app.use(express.static("public"));
@@ -16,7 +17,7 @@ app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 app.use(session({ secret: 'your_secret_here', resave: false, saveUninitialized: true }));
 
-// Socket.IO setup
+// Define Socket.IO setup
 io.on('connection', (socket) => {
   console.log('A user connected');
 
@@ -41,6 +42,23 @@ io.on('connection', (socket) => {
   });
 });
 
+// Define the cron job to handle timer expiration
+cron.schedule('0 0 * * *', async () => {
+  try {
+    // Retrieve all users from the database
+    const users = await UserModel.find();
+
+    // Iterate through each user and handle timer expiration
+    for (const user of users) {
+      // Pass necessary parameters to handleTimerExpiration function
+      await handleTimerExpiration(user.phoneNumber);
+    }
+
+    console.log('Timer expiration handled for all users.');
+  } catch (error) {
+    console.error('Error handling timer expiration for all users:', error);
+  }
+});
 
 async function startCountdownTimer(req, phoneNumber) {
   try {
@@ -71,20 +89,33 @@ async function startCountdownTimer(req, phoneNumber) {
 async function handleTimerExpiration(phoneNumber, req) {
   try {
     const user = await UserModel.findOne({ phoneNumber: phoneNumber });
-    if (user && user.countdownStartTime && user.investmentAmount >= 10000) {
+    if (user && user.countdownStartTime) {
       const currentTime = new Date();
       const elapsedTime = currentTime - user.countdownStartTime;
       if (elapsedTime >= user.remainingTime) {
-        user.investmentEarnings += 19.3;
+        let topupValue = 0;
+        if (user.topup) {
+          topupValue = parseFloat(user.topup);
+          topupValue = Math.round((topupValue + Number.EPSILON) * 100) / 100; // Round to two decimal places
+        }
+        user.investmentEarnings += topupValue;
         user.countdownStartTime = currentTime;
         user.remainingTime = (7 * 24 * 60 * 60 * 1000) - (2 * 60 * 1000);
         await user.save();
-        console.log(`Timer expired for user ${phoneNumber}. Added 19.3 to investment earnings.`);
+        console.log(`Timer expired for user ${phoneNumber}. Added ${topupValue} to investment earnings.`);
+        req.session.countdownStartTime = user.countdownStartTime;
+        req.session.remainingTime = user.remainingTime;
+
+        // Restart the timer afresh
+        user.countdownStartTime = currentTime;
+        user.remainingTime = (7 * 24 * 60 * 60 * 1000) - (2 * 60 * 1000);
+        await user.save();
+        console.log(`Timer restarted afresh for user ${phoneNumber}`);
         req.session.countdownStartTime = user.countdownStartTime;
         req.session.remainingTime = user.remainingTime;
       }
-    } else if (user && user.countdownStartTime && user.investmentAmount < 10000) {
-      // Pause the timer when the investment amount goes below 10000
+    } else if (user && user.countdownStartTime && user.investmentAmount === 0) {
+      // Pause the timer when the investment amount is zero
       user.countdownStartTime = null;
       user.remainingTime = null;
       await user.save();
@@ -96,6 +127,8 @@ async function handleTimerExpiration(phoneNumber, req) {
     console.error(`Error handling timer expiration for user ${phoneNumber}:`, error);
   }
 }
+
+
 
 
 app.get("/login", (req, res) => {
@@ -120,14 +153,112 @@ app.post("/login", async (req, res) => {
 
     // If the username doesn't exist in the database, return "Incorrect username"
     if (!user) {
-      return res.status(401).send("Incorrect username <br> <a href='/login'>Retry with correct username</a> <br> <a href='/changes'>Forgot your username? Click here to reset it</a>");
-    }
+      const htmlResponse = `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Oops! Incorrect Username</title>
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      background-color: white; /* White background */
+                  }
+                  .container {
+                      text-align: center;
+                      margin-top: 50px;
+                  }
+                  .error-message {
+                      background-color: #1e90ff; /* Thicker blue background */
+                      color: white;
+                      padding: 20px;
+                      border-radius: 10px;
+                      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                      max-width: 400px;
+                      margin: 0 auto;
+                  }
+                  .error-message a {
+                      color: white;
+                      text-decoration: underline;
+                      margin-top: 10px;
+                      display: block;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="error-message">
+                      <h2>Oops!</h2>
+                      <p>Incorrect username</p>
+                      <a href="/login">Retry with correct username</a>
+                      <a href="/changes">Forgot your username? Click here! to reset it</a>
+                  </div>
+              </div>
+          </body>
+          </html>
+      `;
+      return res.status(401).send(htmlResponse);
+  }
+  
 
     // If the password exists but doesn't match, return "Incorrect password"
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
-      return res.status(401).send("Incorrect password <br> <a href='/login'>Retry with correct password</a> <br> <a href='/changes'>Forgot your password? Click here to reset it</a>");
-    }
+      const htmlResponse = `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Oops! Incorrect Password</title>
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      background-color: white;
+                  }
+                  .container {
+                      text-align: center;
+                      margin-top: 50px;
+                  }
+                  .error-message {
+                      background-color: #1e90ff;
+                      color: white;
+                      padding: 20px;
+                      border-radius: 10px;
+                      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                      max-width: 400px;
+                      margin: 0 auto;
+                  }
+                  .error-message h2 {
+                      margin-top: 0;
+                  }
+                  .error-message p {
+                      margin-bottom: 20px;
+                  }
+                  .error-message a {
+                      color: white;
+                      text-decoration: underline;
+                      display: block;
+                      margin-bottom: 10px;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="error-message">
+                      <h2>Oops!</h2>
+                      <p>Incorrect password</p>
+                      <a href="/login">Retry with correct password</a>
+                      <a href="/changes">Forgot your password? Click here! to reset it</a>
+                  </div>
+              </div>
+          </body>
+          </html>
+      `;
+      return res.status(401).send(htmlResponse);
+  }
+  
   
       await startCountdownTimer(req, username);
       await handleTimerExpiration(username, req);
@@ -156,15 +287,111 @@ app.post("/login", async (req, res) => {
       const { username, password } = req.body;
       const user = await UserModel.findOne({ name: username });
 
-        if (!user) {
-            return res.status(404).send("User not found <br> <a href='/signup'>Create account here!</a>");
-        }
+      if (!user) {
+        const htmlResponse = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Oops! Incorrect Username</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: white; /* White background */
+                    }
+                    .container {
+                        text-align: center;
+                        margin-top: 50px;
+                    }
+                    .error-message {
+                        background-color: #1e90ff; /* Thicker blue background */
+                        color: white;
+                        padding: 20px;
+                        border-radius: 10px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                        max-width: 400px;
+                        margin: 0 auto;
+                    }
+                    .error-message a {
+                        color: white;
+                        text-decoration: underline;
+                        margin-top: 10px;
+                        display: block;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="error-message">
+                        <h2>Oops!</h2>
+                        <p>Incorrect username!</p>
+                        <a href="/login1">Use your correct account username</a>
+                        <a href="/login2">Forgot your username? re-login here! to reset it</a>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+        return res.status(401).send(htmlResponse);
+    }
 
         const isPasswordMatch = await bcrypt.compare(password, user.password);
 
         if (!isPasswordMatch) {
-            return res.status(401).send("Incorrect password <br> <a href='/login1'>Retry with correct password</a> <br> <a href='/changes'>Forgot your password? Click here to reset it</a>");
-        }
+          const htmlResponse = `
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>Oops! Incorrect Password</title>
+                  <style>
+                      body {
+                          font-family: Arial, sans-serif;
+                          background-color: white;
+                      }
+                      .container {
+                          text-align: center;
+                          margin-top: 50px;
+                      }
+                      .error-message {
+                          background-color: #1e90ff;
+                          color: white;
+                          padding: 20px;
+                          border-radius: 10px;
+                          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                          max-width: 400px;
+                          margin: 0 auto;
+                      }
+                      .error-message h2 {
+                          margin-top: 0;
+                      }
+                      .error-message p {
+                          margin-bottom: 20px;
+                      }
+                      .error-message a {
+                          color: white;
+                          text-decoration: underline;
+                          display: block;
+                          margin-bottom: 10px;
+                      }
+                  </style>
+              </head>
+              <body>
+                  <div class="container">
+                      <div class="error-message">
+                          <h2>Oops!</h2>
+                          <p>Incorrect password!</p>
+                          <a href="/login1">Use your correct account password</a>
+                          <a href="/login2">Forgot your password? re-login here! to reset it</a>
+                      </div>
+                  </div>
+              </body>
+              </html>
+          `;
+          return res.status(401).send(htmlResponse);
+      }
 
         await startCountdownTimer(req, username);
         await handleTimerExpiration(username, req);
@@ -223,6 +450,18 @@ app.get("/login1", (req, res) => {
 
 app.get("/loansapply", (req, res) => {
   res.render("loansapply");
+});
+
+app.get("/jobs", (req, res) => {
+  res.render("jobs");
+});
+
+app.get("/login2", (req, res) => {
+  res.render("login2");
+});
+
+app.get("/withdraw", (req, res) => {
+  res.render("withdraw");
 });
 
 
@@ -327,13 +566,19 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/update_investment_amount", async (req, res) => {
-  const { phoneNumber } = req.body;
-  const newAmount = 10000; // Hardcoded for simplicity
+  const { phoneNumber, amount } = req.body;
 
   try {
     const user = await UserModel.findOne({ phoneNumber });
     if (user) {
-      user.investmentAmount += newAmount;
+      // Ensure amount is treated as a number
+      const numericAmount = parseFloat(amount);
+      
+      if (isNaN(numericAmount)) {
+        return res.status(400).json({ error: "Invalid amount value" });
+      }
+
+      user.investmentAmount += numericAmount; // Use the numeric amount
       await user.save();
 
       // Start the timer after updating the investment amount
@@ -349,6 +594,8 @@ app.post("/update_investment_amount", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
 
 // New route for handling password and username changes
 app.post("/changes", async (req, res) => {

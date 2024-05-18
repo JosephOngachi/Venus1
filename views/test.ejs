@@ -1,135 +1,196 @@
-const express = require("express");
-const session = require("express-session");
-const UserModel = require("./config");
-const bcrypt = require('bcrypt');
-const { v4: uuidv4 } = require('uuid');
-const http = require('http');
-const socketIo = require('socket.io');
+<!DOCTYPE html>
+<html lang="zxx">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <!-- meta tag -->
+    <title>VENUS |investments and finance</title>
+    <meta name="description" content="">
+    <!-- responsive tag -->
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- favicon -->
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="images/Ndd8H7OFLvFG.png">
+    <!-- bootstrap v4 css -->
+    <link rel="stylesheet" type="text/css" href="css/f3zbu3oCqx2Y.css">
+    <!-- font-awesome css -->
+    <link rel="stylesheet" type="text/css" href="css/NEFgtgy4Sxbq.css">
+    <!-- animate css -->
+    <link rel="stylesheet" type="text/css" href="css/7VbJfsx3qm2C.css">
+    <!-- owl.carousel css -->
+    <link rel="stylesheet" type="text/css" href="css/Wvxj81n8SQqc.css">
+    <!-- slick css -->
+    <link rel="stylesheet" type="text/css" href="css/XUH4xTGjDvux.css">
+    <!-- magnific popup css -->
+    <link rel="stylesheet" type="text/css" href="css/lxSf4r6AuytM.css">
+    <!-- icofont css  -->
+    <link rel="stylesheet" type="text/css" href="css/yl1RxIWJ8mnP.css">
+    <!-- flaticon css  -->
+    <link rel="stylesheet" type="text/css" href="css/VHlBWk6ynRaH.css">
+    <!-- Timer counter css  -->
+    <link rel="stylesheet" type="text/css" href="css/vT061rPtunNd.css">
+    <!-- rsmenu CSS -->
+    <link rel="stylesheet" type="text/css" href="css/GAJ5YhreOwCW.css">
+    <!-- rsmenu transitions CSS -->
+    <link rel="stylesheet" type="text/css" href="css/DWhdUrQ02leV.css">
+    <!-- style css -->
+    <link rel="stylesheet" type="text/css" href="css/KI8VGqh6hSAL.css">
+    <!-- responsive css -->
+    <link rel="stylesheet" type="text/css" href="css/kSuJ0cT7QAy7.css">
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>  <![endif]-->
+  </head>
+  <body class="home1">
+  
+                     
+                <div class="buy-tickets"> <br>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- .container-fullwidth --> </div>
+      <!-- Menu End --> </header>
+    <!--Header End-->
+    <!-- Slider Area Start -->
+    <div id="rs-slider" class="rs-slider-banner">
+      <div id="home-banner">
+        <!-- Item 1 -->
+        <div class="item active"> <img src="images/Fh9p9ZS2mCHR.jpg" alt="">
+          <div class="slide-content text-center">
+            <div class="display-table">
+              <div class="display-table-cell">
+                <div class="container">
+                  <h1 class="slider-title" data-animation-in="fadeInLeft" data-animation-out="animate-out">
+                    STEP INTO VENUS INVESTMENTS AND THRIVE!</h1>
+                </div>
+                <a href="invpayments" class="primary-btn mr-30" style="animation: blink 1s infinite;">Invest Now!</a>
 
-const app = express();
-const server = http.createServer(app); // Create an HTTP server instance
-const io = socketIo(server); // Initialize Socket.IO with the HTTP server
+                <style>
+                @keyframes blink {
+                  0% { opacity: 1; }
+                  50% { opacity: 0; }
+                  100% { opacity: 1; }
+                }
+                </style>
 
-app.use(express.json());
-app.use(express.static("public"));
-app.use(express.urlencoded({ extended: false }));
-app.set("view engine", "ejs");
-app.use(session({ secret: 'your_secret_here', resave: false, saveUninitialized: true }));
+                <!-- Updated button -->
+<button id="withdrawBtn" class="secondary-btn" onclick="window.location.href='/withdraw'" style="background-color: blue; color: white; font-weight: bold;">Withdraw now!</button>
 
-// Socket.IO setup
-io.on('connection', (socket) => {
-  console.log('A user connected');
-  // Add Socket.IO event listeners or handlers here as needed
-});
-
-async function startCountdownTimer(req, phoneNumber) {
-  try {
-    const user = await UserModel.findOne({ phoneNumber: phoneNumber });
-    if (user && !user.countdownStartTime) {
-      user.countdownStartTime = new Date();
-      const totalDuration = (7 * 24 * 60 * 60 * 1000) - (2 * 60 * 1000);
-      user.remainingTime = totalDuration;
-      await user.save();
-      console.log(`Countdown timer started for user ${phoneNumber}`);
-      req.session.countdownStartTime = user.countdownStartTime;
-      req.session.remainingTime = user.remainingTime;
-    } else if (user && user.countdownStartTime && user.remainingTime > 0) {
-      const currentTime = new Date();
-      const elapsedTime = currentTime - user.countdownStartTime;
-      user.remainingTime -= elapsedTime;
-      user.countdownStartTime = currentTime;
-      await user.save();
-      console.log(`Countdown timer resumed for user ${phoneNumber}`);
-      req.session.countdownStartTime = currentTime;
-      req.session.remainingTime = user.remainingTime;
+<style>
+    /* Keyframes for trembling animation */
+    @keyframes trembling {
+        0% {
+            transform: translateX(0);
+        }
+        25% {
+            transform: translateX(-2px) rotate(1deg);
+        }
+        75% {
+            transform: translateX(2px) rotate(-1deg);
+        }
+        100% {
+            transform: translateX(0);
+        }
     }
-  } catch (error) {
-    console.error(`Error starting/resuming countdown timer for user ${phoneNumber}:`, error);
-  }
-}
 
-async function handleTimerExpiration(phoneNumber, req) {
-  try {
-    const user = await UserModel.findOne({ phoneNumber: phoneNumber });
-    if (user && user.countdownStartTime && user.investmentAmount >= 10000) {
-      const currentTime = new Date();
-      const elapsedTime = currentTime - user.countdownStartTime;
-      if (elapsedTime >= user.remainingTime) {
-        user.investmentEarnings += 19.3;
-        user.countdownStartTime = currentTime;
-        user.remainingTime = (7 * 24 * 60 * 60 * 1000) - (2 * 60 * 1000);
-        await user.save();
-        console.log(`Timer expired for user ${phoneNumber}. Added 19.3 to investment earnings.`);
-        req.session.countdownStartTime = user.countdownStartTime;
-        req.session.remainingTime = user.remainingTime;
-      }
-    } else if (user && user.countdownStartTime && user.investmentAmount < 10000) {
-      // Pause the timer when the investment amount goes below 10000
-      user.countdownStartTime = null;
-      user.remainingTime = null;
-      await user.save();
-      console.log(`Timer paused for user ${phoneNumber}`);
-      req.session.countdownStartTime = null;
-      req.session.remainingTime = null;
+    /* Apply trembling animation to the button */
+    #withdrawBtn {
+        animation: trembling 0.5s infinite alternate;
     }
-  } catch (error) {
-    console.error(`Error handling timer expiration for user ${phoneNumber}:`, error);
-  }
-}
+</style>
 
-
-app.get("/login", (req, res) => {
-  res.render("login");
-});
-
-app.get("/changes", (req, res) => {
-  res.render("changes");
-});
-app.post("/login", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      const user = await UserModel.findOne({ name: username });
-  
-      if (!user) {
-        return res.status(404).send("User not found <br> <a href='/signup'>Create account here!</a>");
-      }
-  
-      const isPasswordMatch = await bcrypt.compare(password, user.password);
-  
-      if (!isPasswordMatch) {
-        return res.status(401).send("Incorrect password <br> <a href='/login'>Retry with correct password</a> <br> <a href='/changes'>Forgot your password? Click here to reset it</a>");
-      }
-  
-      await startCountdownTimer(req, username);
-      await handleTimerExpiration(username, req);
-  
-      const currentTime = new Date();
-      const elapsedMilliseconds = currentTime - user.countdownStartTime;
-      const adjustedRemainingTime = Math.max(user.remainingTime - elapsedMilliseconds, 0);
-  
-      return res.render("home", {
-        username: user.name,
-        investmentAmount: user.investmentAmount,
-        investmentEarnings: user.investmentEarnings,
-        referralEarnings: user.referralEarnings,
-        referralCredits: user.referralCredits,
-        referralCode: user.referralCode,
-        remainingTime: adjustedRemainingTime
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send("Internal Server Error");
-    }
-  });
-  
-  app.get("/", (req, res) => {
-    res.render("login");
-  });
-  
-  app.get("/signup", (req, res) => {
-    res.render("signup");
-  });
-
-
-
-  loansapply
+                <p id="termsText" style="color:white; font-size: 14px;">Accept
+                  our terms and conditions first!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- #home-banner -->
+    <!-- Slider Area End -->
+    <!-- About Us Start -->
+    <div id="rs-about" class="rs-about section-image sec-spacer">
+      <div class="container">
+        <div class="sec-title text-center"> <span>Ensure you peruse</span>
+          <h2>About our terms and conditions</h2>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="about-des plr-70 text-center">
+              <p>As you embark on your financial journey with us, it's imperative to
+                familiarize yourself with our terms and conditions. These
+                guidelines ensure mutual understanding and uphold the integrity
+                of our investment practices. Please take a moment to review our
+                terms and conditions to make informed decisions about your
+                financial future. We are committed to your success and looking
+                forward to partnering with you on this rewarding investment
+                venture.</p>
+              <a class="primary-btn" href="https://venusterms.netlify.app/">Read our terms and
+                conditions here!</a> </div>
+          </div>
+        </div>
+      </div>
+      <!-- .container --> </div>
+    <!-- About Us End -->
+    <!-- Join Our Events Start-->
+    <div class="join-our-events section-image gray-color sec-spacer">
+      <div class="container">
+        <div class="sec-title text-center"> <span>venus investments</span>
+          <h2>Our Approaches to Your Investment Portfolio</h2>
+        </div>
+        <div class="row choose-list center-box text-center">
+          <!-- choose item start -->
+          <div class="col-lg-4">
+            <div class="choose-item rs-animation-hover"> <i class="icofont icofont-learn rs-animation-scale-up"></i>
+              <h3 class="choose-title">Treasury bills</h3>
+              <p>We invest in Treasury bills, offering stability and modest
+                returns, safeguarding clients' funds while ensuring consistent
+                growth over time.</p>
+            </div>
+          </div>
+          <!-- choose item end -->
+          <!-- choose item start -->
+          <div class="col-lg-4">
+            <div class="choose-item rs-animation-hover"> <i class="icofont icofont-users-social rs-animation-scale-up"></i>
+              <h3 class="choose-title"> stock market</h3>
+              <p>Our strategy involves the stock market, selecting
+                top-performing companies for potential capital appreciation,
+                securing long-term wealth for clients</p>
+            </div>
+          </div>
+          <!-- choose item end -->
+          <!-- choose item start -->
+          <div class="col-lg-4">
+            <div class="choose-item rs-animation-hover"> <i class="icofont icofont-recycle rs-animation-scale-up"></i>
+              <h3 class="choose-title">finance loans</h3>
+              <p>We allocate funds to finance loans, carefully vetting borrowers
+                to mitigate risks, aiming for attractive returns while
+                supporting economic development</p>
+            </div>
+          </div>
+          <!-- choose item end --> </div>
+      </div>
+    </div>
+    <!-- Join events End -->
+    <!-- Our Event Schedule Start -->
+    <div id="rs-events-schedule" class="rs-events-schedule rs-events-schedule1 section-image sec-spacer">
+      <div class="container">
+        <div class="sec-title text-center"> <span>who we are!</span>
+          <h2>we are Your faithful finance partner</h2>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="events-schedule-tabs">
+              <!-- Nav tabs -->
+              <ul class="nav eventday-list">
+                <li class="nav-item"> <br>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+   

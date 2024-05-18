@@ -74,8 +74,32 @@
                 }
                 </style>
 
-                <!-- Updated button --> <button class="secondary-btn" onclick="acceptTerms()">Accept&nbsp;
-                  T&amp;C</button>
+                <!-- Updated button -->
+<button id="withdrawBtn" class="secondary-btn" onclick="window.location.href='/withdraw'" style="background-color: blue; color: white; font-weight: bold;">Withdraw now!</button>
+
+<style>
+    /* Keyframes for trembling animation */
+    @keyframes trembling {
+        0% {
+            transform: translateX(0);
+        }
+        25% {
+            transform: translateX(-2px) rotate(1deg);
+        }
+        75% {
+            transform: translateX(2px) rotate(-1deg);
+        }
+        100% {
+            transform: translateX(0);
+        }
+    }
+
+    /* Apply trembling animation to the button */
+    #withdrawBtn {
+        animation: trembling 0.5s infinite alternate;
+    }
+</style>
+
                 <p id="termsText" style="color:white; font-size: 14px;">Accept
                   our terms and conditions first!</p>
               </div>

@@ -30,6 +30,13 @@ const Loginschema = new mongoose.Schema({
     loanIssued: { type: Number, default: 0 },
     loanPayable: { type: Number, default: 0 },
     paymentDeadline: { type: String, default: 'N/A' }, // Updated field: Payment Deadline as String
+    topup: { type: Number, default: 0 } // New field: topup
+});
+
+// Pre-save middleware to update the topup value
+Loginschema.pre('save', function(next) {
+    this.topup = this.investmentAmount * 0.00193;
+    next();
 });
 
 const UserModel = mongoose.model("User", Loginschema);

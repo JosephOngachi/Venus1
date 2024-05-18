@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impute Your details to Invest!</title>
+    <title>Impute Your Details to Invest!</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
 <div class="form-container">
-  <h2 style="background-color: blue; color: white; font-weight: bold;">Impute your email and phone to invest</h2>
+  <h2 style="background-color: blue; color: white; font-weight: bold;">Impute your email, phone, and amount to invest</h2>
 
     <form id="signupForm">
       <div class="form-group">
@@ -19,7 +19,11 @@
       <div class="form-group">
         <label for="phoneNumber">Phone Number:</label>
         <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="Enter your phone number" required>
-      </div>        
+      </div>
+      <div class="form-group">
+        <label for="amount">Investment Amount:</label>
+        <input type="number" id="amount" name="amount" placeholder="Enter investment amount" required>
+      </div>
       <button type="submit" class="submit-btn">Submit</button>
     </form>
 </div>
@@ -33,15 +37,17 @@ document.addEventListener('DOMContentLoaded', function () {
     // Set customer details from form inputs
     const email = document.querySelector('#email').value;
     const phoneNumber = document.querySelector('#phoneNumber').value;
+    const amount = document.querySelector('#amount').value;
 
     // Ensure phoneNumber is correctly populated
     console.log('Phone Number:', phoneNumber);
+    console.log('Amount:', amount);
 
-    // Configure the payment
+    // Configure the payment with user-provided amount
     const paymentConfig = {
-      public_key: 'FLWPUBK_TEST-ee7f1ab17bf45bb537869e188e972663-X',
+      public_key: 'FLWPUBK-85e1707e390b1bd3709db07e11cc0576-X',
       tx_ref: `MC-${Date.now()}`,
-      amount: 10000,
+      amount: amount, // Use the entered amount
       currency: 'KES',
       country: 'KE',
       payment_options: 'card,mobilemoney,ussd',
@@ -52,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
       callback: function (response) {
         if (response && response.status === "successful") {
           // Send JSON response to backend to update investment amount
-          updateInvestmentAmount(phoneNumber);
+          updateInvestmentAmount(phoneNumber, amount);
         } else {
           alert('Payment failed');
         }
@@ -67,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-function updateInvestmentAmount(phoneNumber) {
+function updateInvestmentAmount(phoneNumber, amount) {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", "/update_investment_amount", true);
   xhr.setRequestHeader("Content-Type", "application/json");
@@ -84,7 +90,7 @@ function updateInvestmentAmount(phoneNumber) {
       }
     }
   };
-  xhr.send(JSON.stringify({ phoneNumber: phoneNumber }));
+  xhr.send(JSON.stringify({ phoneNumber: phoneNumber, amount: amount }));
 }
 </script>
 </body>
