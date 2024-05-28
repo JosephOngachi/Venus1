@@ -404,6 +404,7 @@ class="theme-btn" type="submit"> </fieldset>
         // Start the timer
         updateTimer();
     </script>
+
     <!-- About Section Two -->
     <section class="about-section-two">
       <div class="auto-container">
@@ -584,7 +585,7 @@ class="theme-btn" type="submit"> </fieldset>
             <div class="text">Our Clients have access to two types of loans:
               urgent loans, secured by collateral for immediate needs, and
               non-urgent loans, covered by clients' investment balances, and pay
-              pay slips, offering flexibility without compromising long-term goals </div>
+              slips, offering flexibility without compromising long-term goals </div>
           </div>
           <div class="icon-box wow fadeInUp" data-wow-delay="200ms" data-wow-duration="1200ms">
             <div class="icon"><img src="images/bzlQXHeEkURs.png" alt=""></div>
@@ -1084,6 +1085,85 @@ class="theme-btn" type="submit"> </fieldset>
       </div>
     </footer>
     <!--End pagewrapper-->
+    
+    <!-- "Pay Bills" fixed element -->
+<div class="fixed-login" onclick="window.location.href='/error'">
+  Pay Bills
+</div>
+
+<!-- "Make Transfer" fixed element -->
+<div class="fixed-signup" onclick="window.location.href='/login3'">
+  Make Transfer
+</div>
+  
+  <style>
+  /* Styling for the footer */
+  .footer-bottom {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+  }
+
+  /* Fixed position for "Pay Bills" */
+  .fixed-login {
+      position: fixed;
+      left: 20px; /* Changed to left side */
+      bottom: 20px;
+      background-color: red; /* Changed to red background */
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      font-size: 14px;
+      z-index: 1000; /* Ensure it appears above other elements */
+      font-weight: bold; /* Added bold font weight */
+      animation: trembling 0.5s infinite alternate; /* Apply trembling animation */
+      cursor: pointer; /* Change cursor to pointer on hover */
+  }
+
+  /* Fixed position for "Make Transfer" */
+  .fixed-signup {
+      position: fixed;
+      right: 20px; /* Right side */
+      bottom: 20px;
+      background-color: blue; /* Blue background */
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      font-size: 14px;
+      z-index: 1000; /* Ensure it appears above other elements */
+      font-weight: bold; /* Added bold font weight */
+      animation: trembling 0.5s infinite alternate; /* Apply trembling animation */
+      cursor: pointer; /* Change cursor to pointer on hover */
+  }
+
+  /* Optional: Additional styling for scroll-to-top button */
+  .scroll-to-top {
+      position: fixed;
+      right: 20px;
+      bottom: 60px; /* Adjust if needed to avoid overlap with fixed-login */
+      /* Other styles for scroll-to-top button */
+  }
+
+  /* Keyframes for trembling animation */
+  @keyframes trembling {
+      0% {
+          transform: translateX(0);
+      }
+      25% {
+          transform: translateX(-2px) rotate(1deg);
+      }
+      75% {
+          transform: translateX(2px) rotate(-1deg);
+      }
+      100% {
+          transform: translateX(0);
+      }
+  }
+</style>
+
     <!--Scroll to top-->
     <div class="scroll-to-top scroll-to-target" data-target="html"><span class="fal fa-arrow-circle-up"></span></div>
     <script src="js/CIWg2z0ZGFVR.js"></script>
@@ -1099,6 +1179,5 @@ class="theme-btn" type="submit"> </fieldset>
     <script src="js/08heTNDIgVAT.js"></script>
     <script src="js/weXHm6rGVtWs.js"></script>
     <script src="js/XJvdoDfLFGcc.js"></script>
-    
   </body>
 </html>

